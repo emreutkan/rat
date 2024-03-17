@@ -1,26 +1,21 @@
-
 # Self Decrypting Logic
 import os
-import color
-file_path = ''
 
-def get_file_address():
-    global file_path
-    file_path = input('file address: ').replace('\'', '').replace('[', '').replace(']', '')
-    if input(f'{file_path} is the file address? (y/n): ').lower() == 'n':
-        file_path = ''
-        get_file_address()
-
-def base64_esd():
+def base64_esd(file_path, output_file_destination=None):
     import base64
     with open(file_path, 'rb') as f:
         encode = base64.b64encode(f.read())
-    with open(f'base64-{os.path.basename(file_path)}', 'w') as f:
+
+    if output_file_destination:
+        destination = f'{str(output_file_destination).replace('.py', '')}-base64.py'
+    else:
+        destination = f'base64_{os.path.basename(file_path)}'
+    with open(destination, 'w') as f:
         f.write(f'import base64\nexec(base64.b64decode({encode}))')
-    print('enc.py created')
+    return destination
 
 
-def random_key():
+def random_key(file_path, output_file_destination=None):
     import secrets
     with open(file_path, 'rb') as file:
         data = file.read()
@@ -35,7 +30,11 @@ def random_key():
     key_str = str(list(key))
     output_str = str(list(output))
 
-    with open(f'encrypted_{os.path.basename(file_path)}', 'w') as self_decrypting_file:
+    if output_file_destination:
+        destination = f'{str(output_file_destination).replace('.py', '')}-encrypted.py'
+    else:
+        destination = f'encrypted_{os.path.basename(file_path)}'
+    with open(destination, 'w') as self_decrypting_file:
         decryption_logic = f"""
 key = {key_str}
 encrypted_data = {output_str}
@@ -47,24 +46,10 @@ for i, byte in enumerate(encrypted_data):
 exec(output.decode())
 """
         self_decrypting_file.write(decryption_logic)
-
-
-if __name__ == '__main__':
-    get_file_address()
-    if not os.path.exists(file_path):
-        print('Invalid file address')
-        exit()
-    selection = input(f'{color.white("1. base64")} \n{color.white("2. RandomKey")}')
-    if selection == '1':
-        base64_esd()
-    elif selection == '2':
-        random_key()
-    else:
-        print('Invalid Selection')
-
+        return destination
 
 # After this in a Windows environment, you can use pyinstaller to create an exe file
-    # pip install pyinstaller
-    # pyinstaller --onefile python.py
+# pip install pyinstaller
+# pyinstaller --onefile python.py
 # the exe will not be detected by antivirus software because of the encryption, exe decrypts itself once its executed,
 # however browsers, windows defender and other antivirus software will detect the exe as a threat (not the content itself), thats why it will fla
