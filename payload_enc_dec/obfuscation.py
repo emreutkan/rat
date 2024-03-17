@@ -15,13 +15,13 @@ def base64_esd(file_path, output_file_destination=None):
     return destination
 
 
-def random_key(file_path, output_file_destination=None):
+def symmetric_key(file_path, output_file_destination=None):
     import secrets
     with open(file_path, 'rb') as file:
         data = file.read()
 
     key = secrets.token_bytes(16)
-    iv = secrets.token_bytes(16)  # 16 bytes for the IV
+    iv = secrets.token_bytes(16)
     output = bytearray(iv)
 
     for i, byte in enumerate(data):
